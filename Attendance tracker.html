@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s;
+        }
+        body.dark-mode .container {
+            background-color: #2d3748;
+        }
+        input, button {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        .btn-present {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .btn-absent {
+            background-color: #ef4444;
+            color: white;
+        }
+        .btn-present:hover, .btn-absent:hover {
+            opacity: 0.9;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            transition: border-color 0.3s;
+        }
+        body.dark-mode th, body.dark-mode td {
+            border-color: #4a5568;
+        }
+        th {
+            background-color: #1f2937;
+            color: #f9fafb;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode th {
+            background-color: #4a5568;
+            color: #f9fafb;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+        .dark-mode .message-box {
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+        .top-right-corner {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="top-right-corner">
+        <button id="darkModeToggle" class="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded-full shadow-md hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors">
+            <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                <path d="M21.731 2.269a2.64 2.64 0 00-3.727 0L14.537 5.744a2.64 2.64 0 01-3.727 0L7.08 2.269a2.64 2.64 0 00-3.727 0 2.64 2.64 0 000 3.727l3.494 3.493a2.64 2.64 0 010 3.728l-3.494 3.493a2.64 2.64 0 000 3.728 2.64 2.64 0 003.727 0l3.727-3.494a2.64 2.64 0 013.728 0l3.493 3.494a2.64 2.64 0 003.728 0 2.64 2.64 0 000-3.727L18.261 14.537a2.64 2.64 0 010-3.727l3.493-3.494a2.64 2.64 0 000-3.727z" />
+            </svg>
+            <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 hidden">
+                <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.106a.75.75 0 00-1.061-1.061l-1.591 1.59a.75.75 0 101.061 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM17.889 17.889a.75.75 0 10-1.061-1.061l-1.591 1.59a.75.75 0 001.061 1.061l1.591-1.59zM12 18.75a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zM4.261 17.889a.75.75 0 001.061 1.061l1.591-1.59a.75.75 0 00-1.061-1.061l-1.591 1.59zM3 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H3.75A.75.75 0 013 12zM6.106 6.106a.75.75 0 00-1.061 1.061l1.591 1.59a.75.75 0 001.061-1.061l-1.591-1.59z" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6 text-center">Student Attendance Tracker</h1>
+
+        <!-- The section for adding a new student -->
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+            <input type="text" id="newStudentNameInput" placeholder="Add new student name"
+                class="flex-1 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+            <button id="addStudentBtn" class="bg-blue-600 text-white p-3 rounded-md shadow-md hover:bg-blue-700">Add New Student</button>
+        </div>
+
+        <!-- The main form for marking attendance -->
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+            <input type="number" id="studentRollNoInput" placeholder="Enter student roll number"
+                class="flex-1 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+            <div class="flex gap-2">
+                <button id="markPresentBtn" class="bg-green-600 text-white p-3 rounded-md shadow-md hover:bg-green-700">Mark Present</button>
+                <button id="markAbsentBtn" class="bg-red-600 text-white p-3 rounded-md shadow-md hover:bg-red-700">Mark Absent</button>
+            </div>
+        </div>
+
+        <!-- Attendance table to display records -->
+        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <table class="w-full text-sm text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-white uppercase bg-gray-900">
+                    <tr>
+                        <th scope="col" class="py-3 px-6">Roll No</th>
+                        <th scope="col" class="py-3 px-6">Student Name</th>
+                        <th scope="col" class="py-3 px-6">Present</th>
+                        <th scope="col" class="py-3 px-6">Absent</th>
+                        <th scope="col" class="py-3 px-6">Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTableBody" class="bg-white divide-y divide-gray-200 text-gray-800">
+                    <!-- Data will be populated here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Custom message box instead of alert() -->
+    <div id="messageBox" class="message-box p-6 bg-white rounded-lg shadow-xl hidden">
+        <p id="messageText" class="text-lg font-medium text-gray-700"></p>
+        <button id="closeMessageBox" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Close</button>
+    </div>
+
+    <script>
+        // The core data structure: a JavaScript object acting as a hash map.
+        // The key is the unique student roll number, and the value is an object with attendance data.
+        const studentAttendance = {};
+
+        // Pre-populated list of students with roll numbers.
+        const initialStudents = [
+            { rollNo: 1, name: 'Aarav Sharma' }, { rollNo: 2, name: 'Aditi Singh' },
+            { rollNo: 3, name: 'Akshay Kumar' }, { rollNo: 4, name: 'Ananya Gupta' },
+            { rollNo: 5, name: 'Aryan Patel' }, { rollNo: 6, name: 'Bhavna Das' },
+            { rollNo: 7, name: 'Chetan Yadav' }, { rollNo: 8, name: 'Deepika Rao' },
+            { rollNo: 9, name: 'Devansh Verma' }, { rollNo: 10, name: 'Divya Pandey' },
+            { rollNo: 11, name: 'Gautam Reddy' }, { rollNo: 12, name: 'Ishita Khanna' },
+            { rollNo: 13, name: 'Jatin Kohli' }, { rollNo: 14, name: 'Kavya Mishra' },
+            { rollNo: 15, name: 'Kunal Jain' }, { rollNo: 16, name: 'Lakshya Saini' },
+            { rollNo: 17, name: 'Manya Kapoor' }, { rollNo: 18, name: 'Manish Kumar' },
+            { rollNo: 19, name: 'Meera Singh' }, { rollNo: 20, name: 'Mohit Sharma' },
+            { rollNo: 21, name: 'Nandini Shah' }, { rollNo: 22, name: 'Nikhil Arora' },
+            { rollNo: 23, name: 'Pranav Joshi' }, { rollNo: 24, name: 'Priya Agarwal' },
+            { rollNo: 25, name: 'Rahul Gandhi' }, { rollNo: 26, name: 'Rani Sen' },
+            { rollNo: 27, name: 'Rohan Mehta' }, { rollNo: 28, name: 'Saisha Roy' },
+            { rollNo: 29, name: 'Sakshi Singh' }, { rollNo: 30, name: 'Samarth Kulkarni' },
+            { rollNo: 31, name: 'Sana Khan' }, { rollNo: 32, name: 'Sarthak Bhatt' },
+            { rollNo: 33, name: 'Shreya Iyer' }, { rollNo: 34, name: 'Siddharth Varma' },
+            { rollNo: 35, name: 'Sonia Sharma' }, { rollNo: 36, name: 'Suhani Jain' },
+            { rollNo: 37, name: 'Tanmay Saxena' }, { rollNo: 38, name: 'Tarun Kumar' },
+            { rollNo: 39, name: 'Urvi Chauhan' }, { rollNo: 40, name: 'Varun Das' },
+            { rollNo: 41, name: 'Vedika Singh' }, { rollNo: 42, name: 'Vikas Sharma' },
+            { rollNo: 43, name: 'Yashvardhan Malik' }, { rollNo: 44, name: 'Yuvraj Singh' },
+            { rollNo: 45, name: 'Zoya Khan' }, { rollNo: 46, name: 'Harshita Kumar' },
+            { rollNo: 47, name: 'Ishan Sharma' }, { rollNo: 48, name: 'Kriti Singh' },
+            { rollNo: 49, name: 'Om Gupta' }, { rollNo: 50, name: 'Kirti Jha' }
+        ];
+
+        // Populate the studentAttendance hash map on page load
+        initialStudents.forEach(student => {
+            studentAttendance[student.rollNo] = {
+                name: student.name,
+                rollNo: student.rollNo,
+                present: 0,
+                absent: 0,
+                lastUpdated: 'N/A'
+            };
+        });
+
+        // DOM element references
+        const studentRollNoInput = document.getElementById('studentRollNoInput');
+        const markPresentBtn = document.getElementById('markPresentBtn');
+        const markAbsentBtn = document.getElementById('markAbsentBtn');
+        const attendanceTableBody = document.getElementById('attendanceTableBody');
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
+        const closeMessageBoxBtn = document.getElementById('closeMessageBox');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const newStudentNameInput = document.getElementById('newStudentNameInput');
+        const addStudentBtn = document.getElementById('addStudentBtn');
+        const moonIcon = document.getElementById('moonIcon');
+        const sunIcon = document.getElementById('sunIcon');
+
+        // Function to display a message to the user
+        function showMessage(message) {
+            messageText.textContent = message;
+            messageBox.classList.remove('hidden');
+        }
+
+        // Function to hide the message box
+        function hideMessageBox() {
+            messageBox.classList.add('hidden');
+        }
+        
+        closeMessageBoxBtn.addEventListener('click', hideMessageBox);
+
+        // Function to render the attendance data into the HTML table
+        function renderTable() {
+            // Clear the existing table body
+            attendanceTableBody.innerHTML = '';
+            
+            // Get all student roll numbers (keys) from the hash map
+            const studentRollNos = Object.keys(studentAttendance).map(Number).sort((a, b) => a - b);
+
+            // Iterate through each student and create a table row
+            studentRollNos.forEach(rollNo => {
+                const student = studentAttendance[rollNo];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="py-4 px-6">${student.rollNo}</td>
+                    <td class="py-4 px-6">${student.name}</td>
+                    <td class="py-4 px-6">${student.present}</td>
+                    <td class="py-4 px-6">${student.absent}</td>
+                    <td class="py-4 px-6">${student.lastUpdated}</td>
+                `;
+                attendanceTableBody.appendChild(row);
+                 });
+        }
+
+        // Event listener for the "Mark Present" button
+        markPresentBtn.addEventListener('click', () => {
+            const rollNo = parseInt(studentRollNoInput.value);
+            
+            // Validate input
+            if (isNaN(rollNo) || rollNo < 1) {
+                showMessage("Please enter a valid roll number.");
+                return;
+            }
+
+            // Look up student in the hash map by roll number
+            const student = studentAttendance[rollNo];
+            if (student) {
+                const currentDate = new Date().toLocaleDateString();
+                student.present += 1;
+                student.lastUpdated = currentDate;
+                showMessage(`${student.name} (Roll No: ${rollNo}) marked as present.`);
+            } else {
+                showMessage(`Student with Roll No ${rollNo} not found.`);
+            }
+
+            // Update the table display
+            renderTable();
+            // Clear the input field
+            studentRollNoInput.value = '';
+        });
+
+        // Event listener for the "Mark Absent" button
+        markAbsentBtn.addEventListener('click', () => {
+            const rollNo = parseInt(studentRollNoInput.value);
+            
+            // Validate input
+            if (isNaN(rollNo) || rollNo < 1) {
+                showMessage("Please enter a valid roll number.");
+                return;
+            }
+
+            // Look up student in the hash map by roll number
+            const student = studentAttendance[rollNo];
+            if (student) {
+                const currentDate = new Date().toLocaleDateString();
+                student.absent += 1;
+                student.lastUpdated = currentDate;
+                showMessage(`${student.name} (Roll No: ${rollNo}) marked as absent.`);
+            } else {
+                showMessage(`Student with Roll No ${rollNo} not found.`);
+            }
+
+            // Update the table display
+            renderTable();
+            // Clear the input field
+            studentRollNoInput.value = '';
+        });
+
+        // Event listener for the "Add New Student" button
+        addStudentBtn.addEventListener('click', () => {
+            const newStudentName = newStudentNameInput.value.trim();
+
+            if (newStudentName === '') {
+                showMessage("Please enter a name for the new student.");
+                return;
+            }
+
+            const newRollNo = Object.keys(studentAttendance).length + 1;
+            
+            studentAttendance[newRollNo] = {
+                name: newStudentName,
+                rollNo: newRollNo,
+                present: 0,
+                absent: 0,
+                lastUpdated: 'N/A'
+            };
+
+            showMessage(`Added new student: ${newStudentName} with Roll No: ${newRollNo}.`);
+            renderTable();
+            newStudentNameInput.value = '';
+        });
+
+        // Event listener for the dark mode toggle button
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            
+            if (isDarkMode) {
+                moonIcon.classList.add('hidden');
+                sunIcon.classList.remove('hidden');
+            } else {
+                moonIcon.classList.remove('hidden');
+                sunIcon.classList.add('hidden');
+            }
+        });
+
+        // Initial render of the table and check for dark mode preference on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                moonIcon.classList.add('hidden');
+                sunIcon.classList.remove('hidden');
+            }
+            renderTable();
+        });
+    </script>
+</body>
+</html>
